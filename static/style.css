@@ -319,6 +319,41 @@ tr:last-child td {
   color: var(--muted);
   font-weight: 700;
   font-size: 13px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.page-risk {
+  display: inline-flex;
+  min-width: 88px;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.page-risk-low {
+  background: #e7f6ed;
+  color: var(--good);
+}
+
+.page-risk-medium {
+  background: #fff2d9;
+  color: var(--warn);
+}
+
+.page-risk-high {
+  background: #fdeceb;
+  color: var(--bad);
+}
+
+.page-delta {
+  color: #34434a;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .visual-row {

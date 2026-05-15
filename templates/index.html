@@ -139,7 +139,11 @@
         <div class="visual-comparison-grid">
           {% for pair in row["Visual Diff Pairs"] %}
           <article class="visual-card">
-            <p class="visual-page-label">Page {{ pair["page"] }}</p>
+            <p class="visual-page-label">
+              <span>Page {{ pair["page"] }}</span>
+              <span class="page-risk page-risk-{{ pair['risk_level'] }}">{{ pair["risk_level"]|upper }} risk</span>
+              <span class="page-delta">Delta {{ "%.2f"|format(pair["change_percent"]) }}%</span>
+            </p>
             <div class="visual-row">
               <figure>
                 <figcaption>Baseline</figcaption>

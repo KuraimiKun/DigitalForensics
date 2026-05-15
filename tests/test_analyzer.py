@@ -89,6 +89,10 @@ class AnalyzerTests(unittest.TestCase):
         self.assertTrue(rows[0]["Visual Diff Pairs"])
         self.assertTrue((report_dir / "visual_diffs" / rows[0]["Visual Diff Links"][0]).exists())
         first_pair = rows[0]["Visual Diff Pairs"][0]
+        self.assertIn("risk_level", first_pair)
+        self.assertIn(first_pair["risk_level"], {"low", "medium", "high"})
+        self.assertIn("change_percent", first_pair)
+        self.assertIsInstance(first_pair["change_percent"], float)
         self.assertTrue((report_dir / "visual_diffs" / first_pair["baseline"]).exists())
         self.assertTrue((report_dir / "visual_diffs" / first_pair["current"]).exists())
         self.assertTrue((report_dir / "visual_diffs" / first_pair["diff"]).exists())

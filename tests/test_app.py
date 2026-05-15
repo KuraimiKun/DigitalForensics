@@ -35,6 +35,8 @@ class AppRouteTests(unittest.TestCase):
         self.assertIn("_baseline.png", response.text)
         self.assertIn("_current.png", response.text)
         self.assertIn("_diff.png", response.text)
+        self.assertIn("page-risk", response.text)
+        self.assertIn("Delta", response.text)
         match = re.search(r"/download/([a-f0-9]+)/csv", response.text)
         self.assertIsNotNone(match)
         report_id = match.group(1)

@@ -829,6 +829,8 @@ def compare_visual_pages(
                     result.comparison_sets.append(
                         {
                             "page": page_index + 1,
+                            "change_percent": round(change_percent, 2),
+                            "risk_level": visual_risk_for_change_percent(change_percent),
                             "baseline": baseline_name,
                             "current": current_name,
                             "diff": diff_name,
@@ -860,6 +862,14 @@ def render_page_image(doc: fitz.Document, page_index: int) -> Image.Image:
     matrix = fitz.Matrix(VISUAL_DIFF_DPI / 72, VISUAL_DIFF_DPI / 72)
     pix = doc.load_page(page_index).get_pixmap(matrix=matrix, alpha=False)
     return Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+
+
+def visual_risk_for_change_percent(change_percent: float) -> str:
+    if change_percent >= 2.5:
+        return "high"
+    if change_percent >= 0.35:
+        return "medium"
+    return "low"
 
 
 def equalize_image_sizes(left: Image.Image, right: Image.Image) -> tuple[Image.Image, Image.Image]:
