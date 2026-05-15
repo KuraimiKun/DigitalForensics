@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDF Forensics Analyzer</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+</head>
+<body>
+  <main class="page">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Digital forensics workflow</p>
+        <h1>PDF Forensics Analyzer</h1>
+      </div>
+      {% if summary %}
+      <div class="verdict">
+        <span>Summary Verdict</span>
+        <strong>{{ summary.overall_verdict }}</strong>
+      </div>
+      {% endif %}
+    </header>
+
+    <section class="panel">
+      <form method="post" action="/analyze" enctype="multipart/form-data" class="upload-form">
+        <label class="field">
+          <span>PDF files</span>
+          <input type="file" name="pdf_files" accept="application/pdf,.pdf" multiple required>
+        </label>
+        <label class="field">
+          <span>Baseline PDF</span>
+          <input type="file" name="baseline_pdf" accept="application/pdf,.pdf">
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input type="password" name="pdf_password" autocomplete="off" placeholder="Optional">
+        </label>
+        <button type="submit">Analyze</button>
+      </form>
+      {% if error %}
+      <p class="error">{{ error }}</p>
+      {% endif %}
+    </section>
+
+    {% if summary %}
+    <section class="summary-strip">
+      <div>
+        <span>Total PDFs</span>
+        <strong>{{ summary.total }}</strong>
+      </div>
+      <div>
+        <span>Flagged</span>
+        <strong>{{ summary.flagged }}</strong>
+      </div>
+      <div>
+        <span>Max Risk</span>
+        <strong>{{ summary.max_risk_score }}</strong>
+      </div>
+      <div>
+        <span>Average Risk</span>
+        <strong>{{ summary.average_risk_score }}</strong>
+      </div>
+      <div>
+        <span>Baseline</span>
+        <strong>{{ summary.baseline_name if summary.baseline_name else 'Not provided' }}</strong>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if rows %}
+    <section class="results">
+      <div class="results-header">
+        <h2>Structured Report</h2>
+        <div class="downloads">
+          <a href="/download/{{ report_id }}/csv">CSV</a>
+          <a href="/download/{{ report_id }}/xlsx">Excel</a>
+          <a href="/download/{{ report_id }}/json">JSON</a>
+          <a href="/download/{{ report_id }}/pdf">PDF Report</a>
+          <a href="/download/{{ report_id }}/zip">ZIP Bundle</a>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>PDF</th>
+              <th>Risk</th>
+              <th>Verdict</th>
+              <th>Risk Reasons</th>
+              <th>Metadata Issues</th>
+              <th>Revisions</th>
+              <th>Hash Match</th>
+              <th>Content Diff</th>
+              <th>Visual Diff</th>
+              <th>Signature Validity</th>
+              <th>Forensic Indicators</th>
+              <th>Flagged</th>
+              <th>Artifacts</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+            <tr>
+              <td>{{ row["PDF"] }}</td>
+              <td><span class="score score-{{ 'high' if row['Risk Score'] >= 70 else 'medium' if row['Risk Score'] >= 30 else 'low' }}">{{ row["Risk Score"] }}</span></td>
+              <td>{{ row["Verdict"] }}</td>
+              <td>{{ row["Risk Reasons"] }}</td>
+              <td>{{ row["Metadata Issues"] }}</td>
+              <td>{{ row["Revisions"] }}</td>
+              <td>{{ row["Hash Match"] }}</td>
+              <td>{{ row["Content Diff"] }}</td>
+              <td>{{ row["Visual Diff"] }}</td>
+              <td>{{ row["Signature Validity"] }}</td>
+              <td>{{ row["Forensic Indicators"] }}</td>
+              <td><span class="flag flag-{{ row["Flagged"]|lower }}">{{ row["Flagged"] }}</span></td>
+              <td>
+                <div class="artifact-list">
+                  {% if row["Annotated PDF"] %}
+                  <a href="/annotated/{{ report_id }}/{{ row["Annotated PDF"] }}">Annotated PDF</a>
+                  {% endif %}
+                  {% for artifact in row["Visual Diff Links"] %}
+                  <a href="/visual/{{ report_id }}/{{ artifact }}">Visual page {{ loop.index }}</a>
+                  {% endfor %}
+                  {% if not row["Annotated PDF"] and not row["Visual Diff Links"] %}
+                  <span>-</span>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% for row in rows %}
+      {% if row["Visual Diff Pairs"] %}
+      <section class="visual-review">
+        <h3>{{ row["PDF"] }} - Side-by-side Visual Diff</h3>
+        <div class="visual-comparison-grid">
+          {% for pair in row["Visual Diff Pairs"] %}
+          <article class="visual-card">
+            <p class="visual-page-label">Page {{ pair["page"] }}</p>
+            <div class="visual-row">
+              <figure>
+                <figcaption>Baseline</figcaption>
+                <img src="/visual/{{ report_id }}/{{ pair['baseline'] }}" alt="Baseline page {{ pair['page'] }}">
+              </figure>
+              <figure>
+                <figcaption>Current</figcaption>
+                <img src="/visual/{{ report_id }}/{{ pair['current'] }}" alt="Current page {{ pair['page'] }}">
+              </figure>
+              <figure>
+                <figcaption>Diff highlight</figcaption>
+                <img src="/visual/{{ report_id }}/{{ pair['diff'] }}" alt="Diff page {{ pair['page'] }}">
+              </figure>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+      {% endfor %}
+    </section>
+    {% endif %}
+  </main>
+</body>
+</html>
